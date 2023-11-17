@@ -8,3 +8,4 @@ export {default as Body} from "./Body";
 export {default as ShowBoxs} from "./ShowBoxs";
 export {default as UpdateSlotLecturer} from "./UpdateSlotLecturer";
 export {default as CreateRequestSlot} from "./CreateRequestSlot";
+export {default as SchedulerLecturer} from "./SchedulerLecturer";

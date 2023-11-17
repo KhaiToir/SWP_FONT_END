@@ -5,6 +5,7 @@ import {
     PendingLecturer,
     RequestLecturer,
     ScheduleLecturer,
+    SchedulerLecturer,
   } from "./index";
   import { Link, Route, Routes } from "react-router-dom";
 export default function Body({userId}) {
@@ -12,6 +13,16 @@ export default function Body({userId}) {
   return (
     <div className="min-h-[90%] flex flex-col bg-white">
       <div className="flex flex-row h-[10%]">
+        <Link to="Scheduler">
+          <button
+            className={` w-40 h-14 ${
+              page === "Scheduler" ? "bg-orange-300" : "bg-gray-300"
+            }`}
+            onClick={() => chosePage("Scheduler")}
+          >
+            Scheduler
+          </button>
+        </Link>
         <Link to="Home">
           <button
             className={` w-40 h-14 ${
@@ -55,6 +66,8 @@ export default function Body({userId}) {
       </div>
       <div className="h-[90%]">
         <Routes>
+
+          <Route path="/Scheduler" element={<SchedulerLecturer userId={userId} chosePage={chosePage}/>} />
           <Route path="/*" element={<HomeLecturer userId={userId} chosePage={chosePage}/>} />
           <Route path="/Home/:requestId" element={<HomeLecturer userId={userId} chosePage={chosePage} />} />
           <Route path="/Pending" element={<PendingLecturer  userId={userId} chosePage={chosePage}/>} />
