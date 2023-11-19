@@ -141,12 +141,14 @@ export const createAccount= async (form) => {
         // Check if the response status is 200 OK
         if (res.status === 200) {
             console.log('Account create successfully.');
+            return('Account create successfully.')
         } else {
             console.log(`Received status ${res.status} from the server.`);
         }
     } catch (err) {
         // Log the detailed error message
         console.error('Error create account:', err);
+        return (err.response.data);
     }
 }
 export const createCourse= async (form) => {
@@ -202,6 +204,7 @@ export const createSlot= async (form) => {
           return('Slot create successfully.');
         } else {
             console.log(`Slot status ${res.status} from the server.`);
+  
         }
     } catch (err) {
         // Log the detailed error message
@@ -274,12 +277,15 @@ export const deleteSlotById = async (id) => {
         // Check if the response status is 200 OK
         if (res.status === 200) {
             console.log('subject deleted successfully.');
+            return('subject deleted successfully.');
         } else {
             console.log(`Received status ${res.status} from the server.`);
+            return (`Received status ${res.status} from the server.`);
         }
     } catch (err) {
         // Log the detailed error message
         console.error('Error deleting subject:', err);
+        return (err.response.data);
     }
 }
 export const deleteRequestById = async (id) => {

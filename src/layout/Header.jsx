@@ -9,7 +9,7 @@ import { buttonClick } from "../animations";
 import { getAllNotification } from "../api";
 import { useEffect, useState } from "react";
 
-function Header({ notifications }) {
+function Header() {
   const [notificationsList, setNotificationList] = useState([]);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const user = useSelector((state) => state.user?.user);
@@ -19,21 +19,35 @@ function Header({ notifications }) {
     const result = value.split("Location");
     return result;
   };
-  useEffect(() => {
-    // Update notificationsList only if notifications prop is provided)
-
-      if (notifications) {
+  async function fetchData() {
+    const response = await getAllNotification()
+      .then((data) =>
         setNotificationList(
-          notifications.sort((a, b) => {
-            const dateA = new Date(a.createdAt);
-            const dateB = new Date(b.createdAt);
-            // Compare dateB with dateA to sort from newest to oldest
-            return dateB - dateA;
-          })
-        );
-      
+          data
+            .filter(
+              (noti) => noti?.sendToId === user?.id && noti?.isRead === false
+            )
+            .sort((a, b) => {
+              const dateA = new Date(a.createdAt);
+              const dateB = new Date(b.createdAt);
+              // Compare dateB with dateA to sort from newest to oldest
+              return dateB - dateA;
+            })
+        )
+      )
+      .catch((error) => console.log(error));
+  }
+  useEffect(() => {
+    // Set up interval to fetch notifications every 5 seconds
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    // Set up interval to fetch notifications every 5 seconds
+    if (notificationOpen === true) {
+      fetchData();
     }
-  }, [notifications]);
+  }, [notificationOpen]);
 
   return (
     <div className="flex w-full bg-orange-400 h-[4rem] items-center relative">

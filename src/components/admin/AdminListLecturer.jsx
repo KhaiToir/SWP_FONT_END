@@ -5,26 +5,34 @@ import "../../cssstyles/popupStyles.css";
 import { getAllUser, deleteAccountById } from "../../api";
 import AdminUpdateAccount from "./AdminUpdateAccount";
 
-export default function AdminListLecturer({ lecturers, setRefresh ,chosePage}) {
+export default function AdminListLecturer({
+  lecturers,
+  setRefresh,
+  chosePage,
+  course,
+}) {
   const [lecturerList, setLecturerList] = useState([]);
+  const [courseList, setCourseList] = useState([]);
   const [showList, setShowList] = useState([]);
   const [searchComponent, setSearchComponent] = useState("");
   const [open, setOpen] = useState(false);
   const [deleteHolder, setDeleteHolder] = useState("");
   const [openUpdate, setOpenUpdate] = useState(false);
   const [updateObject, setUpdateObject] = useState();
- 
   const closeModal = () => {
     setOpen(false);
     setOpenUpdate(false);
   };
 
   useEffect(() => {
-    chosePage('Lecturer')
+    chosePage("Lecturer");
     setLecturerList(lecturers);
     setShowList(lecturers);
-    console.log(lecturerList);
-  }, [lecturers]);
+    console.log("hello",lecturerList);
+    setCourseList(course);
+  
+    console.log("hi",course);
+  }, [lecturers, course]);
 
   function searchHandleClick(e) {
     e.preventDefault();
@@ -59,6 +67,16 @@ export default function AdminListLecturer({ lecturers, setRefresh ,chosePage}) {
       }
     }
   }
+  const returnNameCourse = (id) => {
+    let result=[];
+    id.map(subId=>{
+      let subject=courseList.filter(sub=>sub.id===subId);
+
+      result.push(subject[0].subjectCode);
+    })
+    console.log(result);
+    return result;
+  };
 
   return (
     <div className="w-full max-w-full h-full flex flex-col justify-center items-center gap-5 py-5">
@@ -102,6 +120,9 @@ export default function AdminListLecturer({ lecturers, setRefresh ,chosePage}) {
               <th className="text-xl p-3 font-semibold bg-gray-300 border-black border-r-2">
                 Password
               </th>
+              <th className="text-xl p-3 font-semibold bg-gray-300 border-black border-r-2">
+                Subjects
+              </th>
               <th className="text-xl p-3 font-semibold bg-gray-300 border-black ">
                 Email
               </th>
@@ -129,10 +150,18 @@ export default function AdminListLecturer({ lecturers, setRefresh ,chosePage}) {
                     {info.password}
                   </td>
                   <td className="text-center font-medium text-lg p-2 border-black border-r-2">
+                    {returnNameCourse(info.subjectId).join(", ")}
+                  </td>
+                  <td className="text-center font-medium text-lg p-2 border-black border-r-2">
                     {info.email}
                   </td>
                   <td className="text-center font-medium text-lg p-2 border-black border-r-2">
-                    <button className="  text-gray-500" onClick={() => handleUpdate(info)}>Update</button>
+                    <button
+                      className="  text-gray-500"
+                      onClick={() => handleUpdate(info)}
+                    >
+                      Update
+                    </button>
                   </td>
                   <td className="text-center font-medium text-lg p-2 border-black border-r-2">
                     <button
@@ -179,7 +208,10 @@ export default function AdminListLecturer({ lecturers, setRefresh ,chosePage}) {
               &times;
             </button>
             <div className="flex flex-col items-center h-auto w-auto">
-            <AdminUpdateAccount updateObject={updateObject} setRefresh={setRefresh}/>
+              <AdminUpdateAccount
+                updateObject={updateObject}
+                setRefresh={setRefresh}
+              />
             </div>
           </div>
         </Popup>

@@ -101,6 +101,7 @@ function Admin() {
               element={
                 <AdminListLecturer
                   lecturers={lecturerList}
+                  course={courseList}
                   setRefresh={setRefresh}
                   chosePage={chosePage}
                 />

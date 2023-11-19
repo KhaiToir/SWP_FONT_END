@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { createAccount } from "../../api";
+import { createAccount, getAllSubject } from "../../api";
+import Select from "react-dropdown-select";
 export default function AdminCreate({ setRefresh, chosePage }) {
+  const [subjectList, setSubjectList] = useState([]);
   const zeroFormData = {
     username: "",
     password: "",
@@ -8,7 +10,7 @@ export default function AdminCreate({ setRefresh, chosePage }) {
     email: "",
     dob: "",
     role: "Student",
-    subjectId: [0],
+    subjectId: [],
   };
 
   const [formData, setFormData] = useState({
@@ -18,13 +20,14 @@ export default function AdminCreate({ setRefresh, chosePage }) {
     email: "",
     dob: "",
     role: "Student",
-    subjectId: [0],
+    subjectId: [],
   });
   const [errors, setErrors] = useState({});
-  const [added, setAdded] = useState(false);
+  const [added, setAdded] = useState("");
   async function makePostRequest(form) {
     try {
       const response = await createAccount(form);
+      return response;
     } catch (error) {}
   }
   const handleInputChange = (e) => {
@@ -43,9 +46,9 @@ export default function AdminCreate({ setRefresh, chosePage }) {
     if (Object.keys(newErrors).length === 0) {
       // No validation errors, proceed with the submission
       console.log("Form submitted:", formData);
-      await makePostRequest(formData);
+      const result = await makePostRequest(formData);
       setFormData(zeroFormData);
-      setAdded(true);
+      setAdded(result);
       setRefresh(true);
     }
   }
@@ -53,7 +56,7 @@ export default function AdminCreate({ setRefresh, chosePage }) {
   const cancelAll = () => {
     setFormData(zeroFormData);
     setErrors([]);
-    setAdded(false);
+    setAdded("");
   };
 
   const validateForm = () => {
@@ -91,24 +94,38 @@ export default function AdminCreate({ setRefresh, chosePage }) {
         newErrors.email =
           "Invalid email format. It should be in the format 'xxxxx@fpt.edu.vn'";
       }
+      if (Object.keys(formData.subjectId).length <= 0) {
+        newErrors.subjectId = "Chose at least 1 Subject.";
+      }
     }
 
     // Add more validation rules for other fields as needed
 
     return newErrors;
   };
+  const getSubjects = async () => {
+    try {
+      const result = await getAllSubject().then((data) => setSubjectList(data));
+    } catch (e) {}
+  };
   useEffect(() => {
     chosePage("Create");
+    getSubjects();
   }, []);
-
   return (
     <div className="w-full h-full flex flex-col justify-center items-center  pb-10">
       <div className="w-[50%] h-fit mt-[5%] flex flex-col justify-center gap-3 items-start px-10 py-3 border-orange-400 border-4 rounded-md min-h-[20%]">
         <span className="font-semibold text-2xl mb-5">Create Member</span>
         {added && (
-          <p className="text-green-500 font-semibold text-lg mb-5">
-            Adding succesully!!!
-          </p>
+          <div
+            className={`text-xl ${
+              added === "Account create successfully."
+                ? "text-green-500"
+                : "text-red-500"
+            } font-semibold`}
+          >
+            {added}
+          </div>
         )}
         <form className="w-[80%] mx-auto flex flex-col gap-5">
           <div className="flex flex-row w-full items-center">
@@ -189,6 +206,37 @@ export default function AdminCreate({ setRefresh, chosePage }) {
             ></input>
           </div>
           {errors.email && <p className="text-red-500">{errors.email}</p>}
+          {formData.role && formData.role === "Lecturer" ? (
+            <div className="flex flex-row w-full items-center">
+              <span className="text-xl font-medium w-[30%]">Subjet</span>
+              <Select
+                name="subjectId"
+                onChange={(e) => {
+                  setFormData({
+                    ...formData,
+                    ["subjectId"]: e.map((sub) => {
+                      return sub.id;
+                    }),
+                  });
+                }}
+                className={`border ${
+                  errors.subjectId
+                    ? "border-red-500 border-2"
+                    : "border-gray-900"
+                } rounded-sm py-1 pl-5 pr-3 placeholder:italic bg-gray-200 placeholder:text-gray-400 w-[15rem] max-w-[15rem]`}
+                id="subjectId"
+                options={subjectList}
+                labelField="subjectCode"
+                valueField="id"
+                multi
+              ></Select>
+            </div>
+          ) : (
+            <></>
+          )}
+          {errors.subjectId && (
+            <p className="text-red-500">{errors.subjectId}</p>
+          )}
         </form>
         <div className="flex flex-row  w-full items-center justify-center gap-10">
           <button
