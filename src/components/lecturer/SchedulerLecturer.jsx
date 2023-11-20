@@ -123,7 +123,7 @@ export default function SchedulerLecturer({ userId, chosePage }) {
   }, [bookingRooms]);
 
   const resourceDataSource = [
-    { Status: "Not Book", Id: 1, Color: "#6babfa" },
+    { Status: "Active", Id: 1, Color: "#6babfa" },
     { Status: "Finish", Id: 2, Color: "#000000" },
 
     // { Status: 'Status1',
@@ -158,7 +158,7 @@ export default function SchedulerLecturer({ userId, chosePage }) {
           )}`}
           {")"}
         </div>
-        <div className="status">{props.status}</div>
+        <div className="status">{props.status==='Not Book'?('Active'):(props.status)}</div>
         {/* Add other fields as needed */}
       </div>
     );
@@ -172,24 +172,12 @@ export default function SchedulerLecturer({ userId, chosePage }) {
 
   //validate function
   const isValidLocation = (location) => {
-    const locationRegex = /^(NVHSV|CAMPUS) P\d{3}$/; // Regular expression for validation
+    const locationRegex = /^(NVH|CAMPUS) P\d{3}$/; // Regular expression for validation
 
     return locationRegex.test(location);
   };
 
   const onActionBegin = async (args) => {
-    // {
-    //   "lecturerId": 5,
-    //   "location": "testDate",
-    //   "code": "",
-    //   "limitBooking": 7,
-    //   "mode": "Publish",
-    //   "date": "2023-11-18T01:00:00.000+07",
-    //   "startDateTime": "2023-11-18T01:00:00.000+07",
-    //   "endDateTime": "2023-11-18T02:30:00.000+07"
-    // }
-
-    // Check if the action is 'Add'
     if (args.requestType === "eventCreate") {
       const newEvent = args.data[0]; // The newly created event
       console.log("New Event Created:", newEvent);
@@ -234,7 +222,7 @@ export default function SchedulerLecturer({ userId, chosePage }) {
         // Cancel the event creation and show a message
         args.cancel = true;
         alert(
-          "Invalid location format. Location must be in the format 'NVHSV P000' or 'CAMPUS P000'."
+          "Invalid location format. Location must be in the format 'NVH P000' or 'CAMPUS P000'."
         );
         return;
       }
@@ -310,7 +298,7 @@ export default function SchedulerLecturer({ userId, chosePage }) {
                 name="location"
                 className="e-field e-input"
                 type="text"
-                placeholder="*NNVHSV||CAMPUS P000"
+                placeholder="*NVH||CAMPUS P000"
               ></input>
             </td>
           </tr>
@@ -409,7 +397,7 @@ export default function SchedulerLecturer({ userId, chosePage }) {
           dataSource={resourceDataSource}
         ></ResourceDirective>
       </ResourcesDirective>
-      <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
+      <Inject services={[Day, Week, Month, Agenda]} />
     </ScheduleComponent>
   );
 }
