@@ -6,7 +6,6 @@ import moment from "moment";
 import {
   createBooking,
   createBookingByCode,
-  getAllSubject,
   deleteBookingtById,
 } from "../../api";
 import Popup from "reactjs-popup";
@@ -16,7 +15,6 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
 
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
-  const [subjectList, setSubjectList] = useState([]);
   const [added, setAdded] = useState(false);
   const [denided, openDenied] = useState("");
   const [codeError, setCodeError] = useState("");
@@ -78,18 +76,6 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
     setFormData({ ...formData, [name]: value });
   };
 
-  const searchCourseName = (courseSubjectCode) => {
-    const course = subjectList.find(
-      (course) => course.subjectCode === courseSubjectCode
-    );
-
-    if (course) {
-      return course.id;
-    } else {
-      return 0; // Return null if the course is not found
-    }
-  };
-
   const validateForm = () => {
     const newErrors = {};
 
@@ -102,9 +88,7 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
     } else {
       // If subjectCode is provided, validate it
       if (formData.subjectCode) {
-        if (/^\d/.test(formData.subjectCode)) {
-          newErrors.subjectCode = "Subject Code cannot start with a number";
-        } else if (searchCourseName(formData.subjectCode) === 0) {
+        if (parseInt(formData.subjectCode) === 0) {
           newErrors.subjectCode = "Can't find this course";
         }
       }
@@ -120,11 +104,6 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
     return newErrors;
   };
 
-  async function fetchData() {
-    const response = await getAllSubject()
-      .then((data) => setSubjectList(data))
-      .catch((error) => console.log(error));
-  }
   async function handleSubmit(e) {
     e.preventDefault();
     // Validate the form
@@ -135,7 +114,7 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
       const submitData = {
         studentId: parseInt(userId),
         slotId: parseInt(clickBook),
-        subjectId: parseInt(searchCourseName(formData.subjectCode)),
+        subjectId: parseInt(formData.subjectCode),
         description: formData.description,
         status: "",
       };
@@ -156,7 +135,7 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
       const submitData = {
         studentId: parseInt(userId),
         slotId: parseInt(clickBook),
-        subjectId: parseInt(searchCourseName(formData.subjectCode)),
+        subjectId: parseInt(formData.subjectCode),
         code: formData.code,
         status: "Pending",
       };
@@ -169,10 +148,9 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
         console.log("Form submitted:", submitData);
         await makePostRequestByCode(submitData);
         setAdded(true);
-      
+        setRefresh(true);
       }
     }
-    setRefresh(true)
   }
 
   useEffect(() => {
@@ -180,14 +158,17 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
       setShowInformations(
         childArray.map((slot) => ({
           ...slot,
-          status:slot.denided && slot.denided.length > 0 ? "Denided":slot.status==="Finish" ?(slot.status="Feedback"):(slot.status)
+          status:
+            slot.denided && slot.denided.length > 0
+              ? "Denided"
+              : slot.status === "Finish"
+              ? (slot.status = "Feedback")
+              : slot.status,
         }))
       );
     } else {
       setShowInformations(childArray);
     }
-
-    fetchData();
   }, [childArray]);
   console.log(showInformations);
   const navigate = useNavigate();
@@ -219,7 +200,6 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
     setFormData({});
     setCodeError("");
   }
-  
 
   return (
     <div className="w-full pb-10 right-0 left-0 gap-[5%] flex flex-row flex-wrap h-full relative bg-white">
@@ -271,13 +251,17 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
                 <div
                   className={`absolute -left-4 ${
                     infor.denided && infor.denided.length > 0
-                    ? "bg-red-500"
-                    : infor.status==="Finish"?("bg-blue-500"):("bg-green-500")
+                      ? "bg-red-500"
+                      : infor.status === "Finish"
+                      ? "bg-blue-500"
+                      : "bg-green-500"
                   } py-[0.3rem] px-[0.6rem] rounded-xl text-xs text-white`}
                 >
                   {infor.denided && infor.denided.length > 0
                     ? "Denided"
-                    : infor.status==="Finish"?("Finish"):("Booked")}
+                    : infor.status === "Finish"
+                    ? "Finish"
+                    : "Booked"}
                 </div>
               ) : (
                 <></>
@@ -287,7 +271,7 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
             ${
               (type === "Pending"
                 ? infor.status === "Not Book" && "Cancel"
-                : infor.status) === "Cancel" 
+                : infor.status) === "Cancel"
                 ? "bg-red-500"
                 : infor.status === "Booked"
                 ? "bg-green-500"
@@ -295,7 +279,9 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
                 ? "bg-blue-500"
                 : infor.status === "Feedback"
                 ? "bg-blue-700"
-                :  infor.status ===  "Denided" ?"bg-red-500":"bg-black"
+                : infor.status === "Denided"
+                ? "bg-red-500"
+                : "bg-black"
             }`}
                 value={
                   type === "Pending"
@@ -335,7 +321,7 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
                     </div>
                     <div className="flex flex-row justify-between items-center w-full">
                       <span>Course:</span>
-                      <input
+                      <select
                         name="subjectCode"
                         onChange={handleInputChange}
                         className={`border-2 w-[11rem] ${
@@ -344,7 +330,19 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
                             : "border-gray-900"
                         } `}
                         value={formData.subjectCode}
-                      />
+                      >
+                        <option
+                          value={0}
+                          label="Chose subject."
+                          selected
+                        ></option>
+                        {infor?.subjectRequired&&infor?.subjectRequired.map((sub) => (
+                          <option
+                            value={parseInt(sub.id)}
+                            label={sub.subjectCode}
+                          />
+                        ))}
+                      </select>
                     </div>
                     {errors.subjectCode && (
                       <div className="text-red-500 text-sm">
@@ -388,7 +386,7 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
                     <div className="flex flex-col gap-3 justify-end items-start w-full">
                       <div className="flex flex-row justify-between items-center w-full">
                         <span>Course:</span>
-                        <input
+                        <select
                           name="subjectCode"
                           onChange={handleInputChange}
                           className={`border-2 w-[11rem] ${
@@ -397,7 +395,20 @@ export default function ShowBoxs({ childArray, setRefresh, type, userId }) {
                               : "border-gray-900"
                           } `}
                           value={formData.subjectCode}
-                        />
+                        >
+                          <option
+                            value={0}
+                            label="Chose subject."
+                            selected
+                          ></option>
+                          {infor?.subjectRequired&&infor?.subjectRequired.map((sub, index) => (
+                            <option
+                              key={index}
+                              value={parseInt(sub.id)}
+                              label={sub.subjectCode}
+                            />
+                          ))}
+                        </select>
                       </div>
                       {errors.subjectCode && (
                         <div className="text-red-500 text-sm">

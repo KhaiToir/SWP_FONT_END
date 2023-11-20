@@ -5,98 +5,125 @@ import { useEffect, useState } from "react";
 import {
   getAllBookingByLecturerIDORStudentID,
   getAllSlotByLecturerID,
-  searchBookingById,
+  searchSubjectById,
   searchTeacherById,
 } from "../../api";
 import { DateRangePickerComponent } from "@syncfusion/ej2-react-calendars";
+
 export default function Booking({ userId }) {
   const { lecturerId } = useParams();
   const [bookingRooms, setBookingRooms] = useState([]);
   const [showList, setShowList] = useState([]);
   const [refresh, setRefresh] = useState(false);
-  async function fetchData(id) {
-    const response = await getAllSlotByLecturerID(parseInt(id))
-      .then((data) =>
-        setBookingRooms(
-          data.filter(
-            (slot) =>
-              slot.mode !== "Private" &&
-              slot.status !== "Unactive" &&
-              slot.status !== "Finish"
-          )
-        )
-      )
-      .catch((error) => console.log(error));
-  }
-  async function addObject() {
+  const [selectedDate, setSelectedDate] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAllSlotByLecturerID(parseInt(lecturerId));
+        const filteredData = data.filter(
+          (slot) =>
+            slot.mode !== "Private" &&
+            slot.status !== "Unactive" &&
+            slot.status !== "Finish"
+        );
+        const sortedData = filteredData.sort((a, b) => {
+          const startDateA = new Date(a.startDatetime);
+          const startDateB = new Date(b.startDatetime);
+          return startDateA - startDateB;
+        });
+        setBookingRooms(sortedData);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchData();
+    setRefresh(false);
+  }, [lecturerId, refresh]);
+
+  const addObject = async () => {
     const updatedRequestedList = await Promise.all(
       bookingRooms.map(async (infor) => {
         const lecturerInfor = await searchTeacherById(infor.lecturerId);
         const bookInfor = await getAllBookingByLecturerIDORStudentID(
           infor.lecturerId
         );
-        const check = bookInfor.filter(
+        const check = bookInfor.find(
           (booked) => booked.slotId === infor.id && booked.studentId === userId
         );
-        if (Object.keys(check).length > 0) infor.status = "Booked";
-        // Update the infor object with the response object in the studentId property
+        let subjectRequired = await Promise.all(
+          lecturerInfor.subjectId.map(async (sub) => {
+            const result = await searchSubjectById(parseInt(sub));
+            return result;
+          })
+        );
+
+        infor.subjectRequired = subjectRequired;
+
+        if (check) infor.status = "Booked";
+
         infor.lecturerInfor = lecturerInfor;
-        // Update the infor object with the response object in the subjectId property
-        // Update the infor object with the response object in the slotId property
-        return infor; // Return the updated infor object
+
+        return infor;
       })
     );
-    // Updated array
+
     handleDateChange(updatedRequestedList);
-  }
-  useEffect(() => {
-    if (lecturerId || refresh === true) {
-      fetchData(lecturerId);
-      console.log("booking room");
-      console.log(bookingRooms);
-      setRefresh(false);
-    }
-  }, [lecturerId, refresh]);
+  };
   useEffect(() => {
     if (bookingRooms.length > 0) addObject();
-    console.log(showList);
-  }, [bookingRooms]);
+  }, [bookingRooms, userId]);
 
   const handleDateChange = (args) => {
-    // The selected date range is available in args.value
-    
-    // Check if args.value is empty
-    if (!args.value || args.value.length !== 2) {
+    let selectedDateRange = Array.isArray(args) ? args : args.value;
+
+    if (
+      selectedDate.length === 2 &&
+      (selectedDateRange === selectedDate ||
+        (selectedDateRange && selectedDateRange.length !== 2))
+    ) {
+      selectedDateRange = selectedDate;
+    }
+    console.log(selectedDateRange);
+    if (!selectedDateRange || selectedDateRange.length !== 2) {
+      console.log("null ne");
       const today = new Date();
-      const startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-      const endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
-  
-      // Filter the showList based on the default date range (today 00:00 to today 23:59)
+      const startDate = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+        0,
+        0,
+        0
+      );
+
       const filteredList = bookingRooms.filter((item) => {
         const slotStartDate = new Date(item.startDatetime);
-        const slotEndDate = new Date(item.endDatetime);
-        return startDate <= slotStartDate && slotEndDate <= endDate;
+        return startDate <= slotStartDate;
       });
-  
-      // Update the showList with the filtered list
+
       setShowList(filteredList);
     } else {
-      // Filter the showList based on the selected date range
+      console.log(selectedDateRange);
+      setSelectedDate(selectedDateRange);
+
       const filteredList = bookingRooms.filter((item) => {
         const startDate = new Date(item.startDatetime);
-        const endDate = new Date(item.endDatetime);
-        return args.value[0] <= startDate && endDate <= args.value[1];
+        return (
+          startDate >= new Date(selectedDateRange[0]) &&
+          startDate <= new Date(selectedDateRange[1].setHours(23, 59, 59, 999))
+        );
       });
-  
-      // Update the showList with the filtered list
+
       setShowList(filteredList);
     }
   };
-  
+
   return (
     <div className="w-full bg-white flex flex-col justify-center items-start gap-5">
       <Link
-        className="h-[10%]  font-bold flex flex-row gap-5 items-center"
+        className="h-[10%] font-bold flex flex-row gap-5 items-center"
         to={`/student`}
       >
         <span className="text-4xl">
@@ -105,7 +132,7 @@ export default function Booking({ userId }) {
         <span className="text-2xl underline">Home</span>
       </Link>
       <div className="w-[90%] mx-[5%] h-full bg-white">
-        <div className=" flex flex-row ">
+        <div className="flex flex-row">
           <div>
             <DateRangePickerComponent
               change={handleDateChange}
@@ -117,7 +144,7 @@ export default function Booking({ userId }) {
           childArray={showList}
           setRefresh={setRefresh}
           userId={userId}
-        ></ShowBoxs>
+        />
       </div>
     </div>
   );
