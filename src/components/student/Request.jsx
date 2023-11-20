@@ -5,8 +5,9 @@ import {
   getAllSubject,
   getAllUser,
 } from "../../api";
+import React from "react";
 
-export default function Request({ userId,chosePage }) {
+export default function Request({ userId, chosePage }) {
   const zeroFormData = {
     lecturer: "",
     course: "",
@@ -51,8 +52,8 @@ export default function Request({ userId,chosePage }) {
     //xử lý form để cb truyền API.
     const submitData = {
       studentId: parseInt(userId),
-      lecturerId: parseInt(searchLecturerName(formData.lecturer)),
-      subjectId: parseInt(searchCourseName(formData.course)),
+      lecturerId: parseInt(formData.lecturer),
+      subjectId: parseInt(formData.course),
       description: formData.description,
     };
     console.log(submitData);
@@ -61,30 +62,11 @@ export default function Request({ userId,chosePage }) {
       // No validation errors, proceed with the submission
       console.log("Form submitted:", formData);
       await makePostRequest(submitData);
-      setFormData(zeroFormData)
+      setFormData(zeroFormData);
       setAdded(true);
     }
   }
   //search
-  const searchCourseName = (subjectCode) => {
-    const course = subjectList.find(
-      (course) => course.subjectCode === subjectCode
-    );
-    if (course) {
-      return course.id;
-    } else {
-      return 0; // Return null if the course is not found
-    }
-  };
-
-  const searchLecturerName = (lecturerName) => {
-    const account = accountList.find((acc) => acc.fullname === lecturerName);
-    if (account) {
-      return account.id;
-    } else {
-      return 0; // Return null if the course is not found
-    }
-  };
 
   const cancelAll = (e) => {
     e.preventDefault();
@@ -100,14 +82,14 @@ export default function Request({ userId,chosePage }) {
     // Check if lecturer is not empty
     if (!formData.lecturer) {
       newErrors.lecturer = "Lecturer name is required";
-    } else if (searchLecturerName(formData.lecturer) === 0) {
+    } else if (parseInt(formData.lecturer) === 0) {
       newErrors.lecturer = "Can't find this lecturer";
     }
 
     // Check if course is not empty
     if (!formData.course) {
       newErrors.course = "Course name is required";
-    } else if (searchCourseName(formData.course) === 0) {
+    } else if (parseInt(formData.course) === 0) {
       newErrors.course = "Can't find this course";
     }
     // Check if description is not empty
@@ -119,42 +101,73 @@ export default function Request({ userId,chosePage }) {
 
     return newErrors;
   };
+  const returnSubjectCode = (subjectId) => {
+    const result = subjectList.find((sub) => sub.id === parseInt(subjectId));
+    return result.subjectCode;
+  };
 
   useEffect(() => {
     chosePage("Request");
     fetchData();
   }, []);
-  
+
   return (
     <div className="w-full h-full flex flex-col justify-center items-center  pb-10">
       <div className="w-[50%] h-fit mt-[5%] flex flex-col justify-center gap-3 items-start px-10 py-3 border-orange-400 border-4 rounded-md min-h-[20%]">
         <span className="font-semibold text-2xl mb-5">
           MEETING REQUEST FORM
         </span>
-        {added&&(<div className="text-green-500">Create successfully!!!</div>)}
+        {added && <div className="text-green-500">Create successfully!!!</div>}
         <form className="w-[80%] mx-auto flex flex-col gap-5">
           <div className="flex flex-row w-full items-center">
             <span className="text-xl font-medium w-[30%]">Lecturer</span>
-            <input
+            <select
               name="lecturer"
               onChange={handleInputChange}
               value={formData.lecturer}
               className=" border border-gray-900 rounded-sm py-1 pl-5 pr-3 placeholder:italic bg-gray-200 placeholder:text-gray-400 w-[15rem]"
               type="text"
-            ></input>
+            >
+              <option value={0} label="Choose Lecturer"></option>
+              {accountList &&
+                accountList.map((acc) => (
+                  <option value={acc.id} label={acc.fullname}></option>
+                ))}
+            </select>
           </div>
           {errors.lecturer && (
             <div className="text-red-500">{errors.lecturer}</div>
           )}
           <div className="flex flex-row w-full items-center">
             <span className="text-xl font-medium w-[30%]">Course</span>
-            <input
+            <select
               name="course"
               onChange={handleInputChange}
               value={formData.course}
               className=" border border-gray-900 rounded-sm py-1 pl-5 pr-3 placeholder:italic bg-gray-200 placeholder:text-gray-400 w-[15rem]"
-              type="text"
-            ></input>
+  
+            >
+              <option value={0} label='Choose Subject'></option>
+              {formData.lecturer !== 0 ? (
+                (() => {
+                  const accChosed = accountList.find(
+                    (acc) => acc.id === parseInt(formData.lecturer)
+                  );
+                  console.log(accChosed);
+                  if (accChosed) {
+                    return accChosed.subjectId.map((sub) => (
+                      <option
+                        key={sub}
+                        value={sub}
+                        label={returnSubjectCode(sub)}
+                      ></option>
+                    ));
+                  } else return null;
+                })()
+              ) : (
+                <></>
+              )}
+            </select>
           </div>
           {errors.course && <div className="text-red-500">{errors.course}</div>}
           <div className="flex flex-row w-full items-start">

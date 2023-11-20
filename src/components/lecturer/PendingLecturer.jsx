@@ -10,14 +10,14 @@ import {
 import moment from "moment";
 import Popup from "reactjs-popup";
 
-export default function PendingLecturer({ userId,chosePage }) {
+export default function PendingLecturer({ userId, chosePage }) {
   const [bookedList, setBookedList] = useState([]);
   const [showList, setShowList] = useState([]);
   const [formData, setFormData] = useState({});
   const [formId, setFormId] = useState(0);
   const [popup, setPopup] = useState(false);
   const [refresh, setRefresh] = useState(false);
-  const [deny, setDeny] = useState(false);
+  const [deny, setDeny] = useState("");
   const [reason, setReason] = useState("");
   const [errors, setErrors] = useState("");
 
@@ -27,13 +27,15 @@ export default function PendingLecturer({ userId,chosePage }) {
     setFormId(0);
   };
   const closeModalDeny = () => {
-    setDeny(false);
+    setDeny("");
     setReason("");
     setErrors("");
   };
 
   async function fetchData() {
-    const response = await getAllBookingByLecturerIDORStudentID(parseInt(userId))
+    const response = await getAllBookingByLecturerIDORStudentID(
+      parseInt(userId)
+    )
       .then((data) =>
         setBookedList(data.filter((data) => data.status === "Pending"))
       )
@@ -72,9 +74,9 @@ export default function PendingLecturer({ userId,chosePage }) {
       reason: data.reason === null ? "" : data.reason,
       status: "Denied",
     });
-    console.log(data);
+    console.log("data", data);
     setFormId(data.id);
-    setDeny(true);
+    setDeny(id);
     console.log(data.id);
   }
 
@@ -88,11 +90,13 @@ export default function PendingLecturer({ userId,chosePage }) {
   async function submitDeny(e) {
     e.preventDefault();
     //e này là để dùng ngăn chặn các event khác làm refresh lại trang.
-    console.log(formData);
+
     if (reason !== "") {
-      await makePutData({ ...formData, reason }, formId);
-      setDeny(false);
+      console.log({...formData,reason:reason});
+      await makePutData({...formData,reason:reason}, formId);
+      setDeny("");
       setRefresh(true);
+      setFormId("");
     } else setErrors("You need a reason to deny.");
   }
 
@@ -103,11 +107,11 @@ export default function PendingLecturer({ userId,chosePage }) {
         const subjectInfor = await searchSubjectById(infor.subjectId);
         const slotInfor = await searchSlotById(infor.slotId);
         // Update the infor object with the response object in the studentId property
-        infor.studentId = studentInfor;
+        infor.studentInfor = studentInfor;
         // Update the infor object with the response object in the subjectId property
-        infor.subjectId = subjectInfor;
+        infor.subjectInfor = subjectInfor;
         // Update the infor object with the response object in the slotId property
-        infor.slotId = slotInfor;
+        infor.slotInfor = slotInfor;
         return infor; // Return the updated infor object
       })
     );
@@ -115,8 +119,8 @@ export default function PendingLecturer({ userId,chosePage }) {
     setShowList(updatedRequestedList);
   }
   useEffect(() => {
-    chosePage("Pending")
-    if (userId || refresh == true) {
+    chosePage("Pending");
+    if (userId || refresh === true) {
       fetchData();
       console.log(bookedList);
       setRefresh(false);
@@ -125,7 +129,7 @@ export default function PendingLecturer({ userId,chosePage }) {
   useEffect(() => {
     addObject();
     console.log(showList);
-  }, [bookedList.length <= 0]);
+  }, [bookedList]);
 
   return (
     <div className="w-full h-full flex flex-col justify-center items-center gap-5 py-5">
@@ -167,20 +171,20 @@ export default function PendingLecturer({ userId,chosePage }) {
               showList.map((info, index) => (
                 <tr className="bg-gray-100">
                   <td className="text-center font-medium text-lg p-2 border-black border-b-2 border-l-2 ">
-                    {info.studentId?.fullname}
+                    {info.studentInfor?.fullname}
                   </td>
                   <td className="text-center font-medium text-lg p-2 border-black border-b-2">
-                    {info.subjectId?.subjectCode}
+                    {info.subjectInfor?.subjectCode}
                   </td>
                   <td className="text-center font-medium text-lg p-2 border-black border-b-2">
-                    {info.slotId?.location}
+                    {info.slotInfor?.location}
                   </td>
                   <td className="text-center font-medium text-lg p-2 border-black border-b-2">
-                    {moment(info.slotId?.startDatetime).format("HH:mm")}-
-                    {moment(info.slotId?.endDatetime).format("HH:mm")}
+                    {moment(info.slotInfor?.startDatetime).format("HH:mm")}-
+                    {moment(info.slotInfor?.endDatetime).format("HH:mm")}
                   </td>
                   <td className="text-center font-medium text-lg p-2 border-black border-b-2">
-                    {moment(info.slotId?.startDatetime).format("DD/MM/YY")}
+                    {moment(info.slotInfor?.startDatetime).format("DD/MM/YY")}
                   </td>
                   <td className="text-center font-medium text-lg p-2 border-black border-b-2 max-w-[15rem]  min-w-[15rem]">
                     {info.description}
@@ -201,7 +205,7 @@ export default function PendingLecturer({ userId,chosePage }) {
                       <TiTimes />
                     </button>
                   </td>
-                  {deny === true && (
+                  {parseInt(deny) === info.id && (
                     <div
                       className={`flex flex-col items-end absolute w-fit border-2 right-[7rem] min-h-[5rem] border-black bg-white z-50 opacity-80 px-5 py-1 pb-5`}
                     >
@@ -215,7 +219,10 @@ export default function PendingLecturer({ userId,chosePage }) {
                         <div className="flex flex-row justify-between items-center w-full">
                           <span>Reason:</span>
                           <input
-                            onChange={(e) => setReason(e.target.value)}
+                            onChange={(e) => {
+                              console.log("dienform", e.target.value);
+                              setReason(e.target.value);
+                            }}
                             className={`border-2 w-[11rem] ${
                               errors !== ""
                                 ? "border-red-500 "
