@@ -323,9 +323,9 @@ export const updateAccountById= async (form,id) => {
         const res = await axios.put(`${baseURL}/Account/${id}`,form);
         // Check if the response status is 200 OK
         if (res.status === 200) {
-            console.log('Subject update successfully.');
+            console.log('Account update successfully.');
         } else {
-            console.log(`Subject status ${res.status} from the server.`);
+            console.log(`Account status ${res.status} from the server.`);
         }
     } catch (err) {
         // Log the detailed error message
@@ -365,13 +365,15 @@ export const updateSlotById= async (form,id) => {
         const res = await axios.put(`${baseURL}/Slot/${id}`,form);
         // Check if the response status is 200 OK
         if (res.status === 200) {
-            console.log('Slot update successfully.');
+           return('Slot update successfully.');
         } else {
             console.log(`Slot status ${res.status} from the server.`);
+
         }
     } catch (err) {
         // Log the detailed error message
         console.error('Error update slot:', err);
+        return(err.response.data)
     }
 }
 export const updateRequestById= async (form,id) => {
@@ -402,4 +404,3 @@ export const updateNotificationById= async (form,id) => {
         console.error('Error update Notification:', err);
     }
 }
-
