@@ -9,7 +9,7 @@ export default function Search({ chosePage }) {
   async function fetchData() {
     const response = await getAllUser()
       .then((data) =>
-        setLecturers(data.filter((ifo) => ifo.role === "Lecturer"))
+        setLecturers(data.filter((ifo) => ifo.role === "Lecturer"&&ifo.status!=="Unactive"))
       )
       .catch((error) => console.log(error));
     console.log(lecturers);

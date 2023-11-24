@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Footer, Header } from "../layout";
-import { getAllSubject, getAllUser, } from "../api";
+import { getAllSubject, getAllUser } from "../api";
 import {
   AdminCreate,
   AdminListLecturer,
@@ -17,13 +17,17 @@ function Admin() {
   const [page, chosePage] = useState("Create");
   async function fetchData() {
     const response = await getAllUser()
-      .then((result) => setUsers(result.filter(infor=>infor.status==='Active')))
+      .then((result) =>
+        setUsers(result.filter((infor) => infor.status === "Active"))
+      )
       .catch((error) => console.log(error));
     console.log(users);
   }
   async function fetchCourse() {
     const response = await getAllSubject()
-      .then((result) => setCourseList(result.filter((course) => course.status !== "Unactive")))
+      .then((result) =>
+        setCourseList(result.filter((course) => course.status !== "Unactive"))
+      )
       .catch((error) => console.log(error));
     console.log(users);
   }
@@ -36,17 +40,14 @@ function Admin() {
     console.log(lecturerList);
   };
   useEffect(() => {
-    if (users.length === 0||refresh===true )
-      fetchData();
-     if(page!=='Course') {
-      filterStudent();
-      filterLecturer();
-      setRefresh(false);
-    }else{
-      fetchCourse();
-    }
+    if (users.length === 0 || refresh === true) fetchData();
+
+    filterStudent();
+    filterLecturer();
     setRefresh(false);
-  }, [users, page,refresh]);
+    fetchCourse();
+    setRefresh(false);
+  }, [users, page, refresh]);
   return (
     <div className="bg-white h-full">
       <Header />
@@ -95,7 +96,16 @@ function Admin() {
         </div>
         <div className="h-[90%]">
           <Routes>
-            <Route path="*" element={<AdminCreate setUsers={setUsers} setRefresh={setRefresh} chosePage={chosePage}/>} />
+            <Route
+              path="*"
+              element={
+                <AdminCreate
+                  setUsers={setUsers}
+                  setRefresh={setRefresh}
+                  chosePage={chosePage}
+                />
+              }
+            />
             <Route
               path="Lecturer"
               element={
@@ -110,12 +120,22 @@ function Admin() {
             <Route
               path="Student"
               element={
-                <AdminListStudents students={studentList}  setRefresh={setRefresh} chosePage={chosePage}/>
+                <AdminListStudents
+                  students={studentList}
+                  setRefresh={setRefresh}
+                  chosePage={chosePage}
+                />
               }
             />
             <Route
               path="Course"
-              element={<AdminListCourse course={courseList}  setRefresh={setRefresh} chosePage={chosePage}/>}
+              element={
+                <AdminListCourse
+                  course={courseList}
+                  setRefresh={setRefresh}
+                  chosePage={chosePage}
+                />
+              }
             />
           </Routes>
         </div>

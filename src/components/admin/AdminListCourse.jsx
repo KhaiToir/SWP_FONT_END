@@ -20,8 +20,8 @@ export default function AdminListCourse({ course, setRefresh,chosePage }) {
   const [updateHolder, setUpdateHolder] = useState();
   const [formData, setFormData] = useState(zeroFormData);
   const [errors, setErrors] = useState({});
-  const [added, setAdded] = useState(false);
-  const [updated, setUpdated] = useState(false);
+  const [added, setAdded] = useState('');
+  const [updated, setUpdated] = useState('');
   //function xử lý khi input vào form.
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -51,6 +51,7 @@ export default function AdminListCourse({ course, setRefresh,chosePage }) {
   async function makePostRequest(form) {
     try {
       const response = await createCourse(form);
+      return (response)
     } catch (error) {
       console.log(error);
     }
@@ -59,6 +60,7 @@ export default function AdminListCourse({ course, setRefresh,chosePage }) {
   async function makePutRequest(form, id) {
     try {
       const response = await updateCourseById(form, id);
+      return (response)
     } catch (error) {
       console.log(error);
     }
@@ -83,9 +85,9 @@ export default function AdminListCourse({ course, setRefresh,chosePage }) {
     if (Object.keys(newErrors).length === 0) {
       // No validation errors, proceed with the submission
       console.log("Form submitted:", formData);
-      await makePostRequest(formData);
+      const res=await makePostRequest(formData);
       setFormData(zeroFormData);
-      setAdded(true);
+      setAdded(res);
       setRefresh(true);
     }
   }
@@ -101,10 +103,10 @@ export default function AdminListCourse({ course, setRefresh,chosePage }) {
     if (Object.keys(newErrors).length === 0) {
       // No validation errors, proceed with the submission
       console.log("Form submitted:", formData);
-      await makePutRequest(formData, updateHolder.id);
+      const res=await makePutRequest(formData, updateHolder.id);
       setUpdateHolder({ ...formData, id: updateHolder.id });
       setFormData(formData);
-      setUpdated(true);
+      setUpdated(res);
       setRefresh(true);
     }
   }
@@ -129,7 +131,7 @@ export default function AdminListCourse({ course, setRefresh,chosePage }) {
     e.preventDefault();
     setFormData(zeroFormData);
     setErrors([]);
-    setAdded(false);
+    setAdded('');
   };
   //function xử lý khi bấm cancel update.
   const cancelAllUpdate = (e) => {
@@ -139,7 +141,7 @@ export default function AdminListCourse({ course, setRefresh,chosePage }) {
       name: updateHolder.name,
     });
     setErrors([]);
-    setAdded(false);
+    setAdded('');
   };
   //function xử lý khi bấm vào vùng ngoài popup.
   const closeModal = () => {
@@ -149,8 +151,8 @@ export default function AdminListCourse({ course, setRefresh,chosePage }) {
     setFormData(zeroFormData);
     setDeleteHolder();
     setUpdateHolder({});
-    setAdded(false);
-    setUpdated(false);
+    setAdded('');
+    setUpdated('');
   };
 
   useEffect(() => {
@@ -302,9 +304,9 @@ export default function AdminListCourse({ course, setRefresh,chosePage }) {
             </button>
             <div className="header font-bold text-3xl"> Create Course!!!</div>
             <div className="content">
-              {added && (
-                <div className="w-full text-green-500 font-semibold text-xl">
-                  Adding successfully!!!
+              {added!=='' && (
+                <div className={` w-full ${added==='Subject create successfully.'?'text-green-500 ': 'text-red-500 '} font-semibold text-xl `}>
+                  {added}
                 </div>
               )}
               <form className="w-full flex justify-center flex-col gap-5 items-center min-h-[10rem]">
@@ -372,9 +374,9 @@ export default function AdminListCourse({ course, setRefresh,chosePage }) {
             </button>
             <div className="header font-bold text-3xl"> Update Course!!!</div>
             <div className="content">
-              {updated && (
-                <div className="w-full text-green-500 font-semibold text-xl">
-                  Updating successfully!!!
+              {updated!=='' && (
+                <div className={`w-full ${updated==='Subject update successfully.'?'text-green-500 ': 'text-red-500 '}font-semibold text-xl`}>
+                  {updated}
                 </div>
               )}
               <form className="w-full flex justify-center flex-col gap-5 items-center min-h-[10rem]">

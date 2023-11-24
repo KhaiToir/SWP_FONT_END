@@ -15,16 +15,23 @@ export default function HomeLecturer({ userId,chosePage }) {
 
   const [refresh, setRefresh] = useState(false);
   async function fetchData() {
-    const response = await getAllSlotByLecturerID(parseInt(userId))
-      .then((data) =>
-        setBookingRooms(
-          data.filter(
-            (slot) => slot.status !== "Unactive" && slot.status !== "Finish"
-          )
-        )
-      )
-      .catch((error) => console.log(error));
+    try {
+      const data = await getAllSlotByLecturerID(parseInt(userId));
+      const filteredData = data.filter(
+        (slot) => slot.status !== "Unactive" && slot.status !== "Finish"
+      );
+  
+      // Sort the filtered data by startDate in ascending order
+      const sortedData = filteredData.sort((a, b) =>
+        new Date(a.startDatetime) - new Date(b.startDatetime)
+      );
+  
+      setBookingRooms(sortedData);
+    } catch (error) {
+      console.log(error);
+    }
   }
+  
   async function addObject() {
     const updatedRequestedList = await Promise.all(
       bookingRooms.map(async (infor) => {
@@ -47,7 +54,6 @@ export default function HomeLecturer({ userId,chosePage }) {
   }
 
   useEffect(() => {
-    chosePage("Home")
     if (userId || refresh === true) fetchData();
     console.log("booking room");
     console.log(bookingRooms);

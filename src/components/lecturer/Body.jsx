@@ -20,17 +20,7 @@ export default function Body({userId}) {
             }`}
             onClick={() => chosePage("Scheduler")}
           >
-            Scheduler
-          </button>
-        </Link>
-        <Link to="Home">
-          <button
-            className={` w-40 h-14 ${
-              page === "Home" ? "bg-orange-300" : "bg-gray-300"
-            }`}
-            onClick={() => chosePage("Home")}
-          >
-            Home
+            Schedule
           </button>
         </Link>
         <Link to="Pending">
@@ -68,7 +58,7 @@ export default function Body({userId}) {
         <Routes>
 
           <Route path="/Scheduler" element={<SchedulerLecturer userId={userId} chosePage={chosePage}/>} />
-          <Route path="/*" element={<HomeLecturer userId={userId} chosePage={chosePage}/>} />
+          <Route path="/*" element={<SchedulerLecturer userId={userId} chosePage={chosePage}/>} />
           <Route path="/Home/:requestId" element={<HomeLecturer userId={userId} chosePage={chosePage} />} />
           <Route path="/Pending" element={<PendingLecturer  userId={userId} chosePage={chosePage}/>} />
           <Route path="/Request" element={<RequestLecturer userId={userId} chosePage={chosePage}/>} />

@@ -24,7 +24,7 @@ export default function Lecturer() {
           element={<CreateSlotLecturer userId={userId} />}
         />
         <Route
-          path="/update/:id"
+          path="/update/:id/:requestId"
           element={<UpdateSlotLecturer userId={userId} />}
         />
         <Route

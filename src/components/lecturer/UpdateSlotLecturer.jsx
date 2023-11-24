@@ -6,6 +6,7 @@ import moment from "moment";
 
 export default function CreateSlotLecturer({userId}) {
   const { id } = useParams();
+  const {requestId}=useParams();
   const zeroFormData = {
     code: "",
     date: "",
@@ -88,12 +89,21 @@ export default function CreateSlotLecturer({userId}) {
     setErrors([]);
     setAdded(false);
   };
+  const isValidLocation = (location) => {
+    const locationRegex = /^(NVH|CAMPUS) P\d{3}$/; // Regular expression for validation
+
+    return locationRegex.test(location);
+  };
   const validateForm = () => {
     const newErrors = {};
 
     // Check if the location is not empty
     if (!formData.location) {
       newErrors.location = "Location is required";
+    } else {
+      if(!isValidLocation(formData.location)){
+        newErrors.location = "Invalid location format. Location must be in the format 'NVH P000' or 'CAMPUS P000'.";
+      }
     }
 
     // Check if date is not empty
@@ -181,12 +191,12 @@ export default function CreateSlotLecturer({userId}) {
       <div className="flex flex-row h-[10%]">
         <NavLink
           className="h-[10%]  font-bold flex flex-row gap-5 items-center"
-          to="/Lecturer"
+          to={`/Lecturer/Home/${requestId}`}
         >
           <span className="text-4xl">
             <BsArrowLeft />
           </span>{" "}
-          <span className="text-2xl underline">Home</span>
+          <span className="text-2xl underline">Back</span>
         </NavLink>
         <div className="w-full flex justify-center items-center">
           <div className="w-[50%] h-fit mt-[5%] flex flex-col justify-center gap-3 items-start px-10 py-3 border-orange-400 border-4 rounded-md min-h-[20%] ">

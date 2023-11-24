@@ -97,13 +97,13 @@ export default function ShowBoxs({
   console.log("request ne");
   console.log(requestInfor);
   return (
-    <div className="w-full pb-10 right-0 left-0 gap-[5%] flex flex-row flex-wrap h-full relative">
-      <div className="w-full font-bold text-2xl pt-5 ">
-          CHOOSE SLOT TO ASSIGN!!!!
+    <div className="w-full pb-5 right-0 left-0 gap-[5%] flex flex-row flex-wrap h-full relative">
+      <div className="w-full font-bold text-xl pt-5 ">
+          CHOOSE SLOT TO ASSIGN.
         </div>
       {showInformations && showInformations.length === 0 && (
         <div className="w-full font-bold text-2xl pt-5 text-red-500">
-          THERE ARE NO SLOT HERE!!!!
+          THERE ARE NO SLOT HERE.
         </div>
       )}
       {showInformations &&
@@ -163,7 +163,7 @@ export default function ShowBoxs({
               ) : (
                 <></>
               )}
-              <Link to={`/Lecturer/Update/${infor.id}`}>
+              <Link to={`/Lecturer/Update/${infor.id}/${requestInfor.id}`}>
                 <button className="text-3xl">
                   <LuPencilLine />
                 </button>

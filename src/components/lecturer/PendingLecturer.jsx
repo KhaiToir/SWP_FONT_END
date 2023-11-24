@@ -33,14 +33,21 @@ export default function PendingLecturer({ userId, chosePage }) {
   };
 
   async function fetchData() {
-    const response = await getAllBookingByLecturerIDORStudentID(
-      parseInt(userId)
-    )
-      .then((data) =>
-        setBookedList(data.filter((data) => data.status === "Pending"))
-      )
-      .catch((error) => console.log(error));
+    try {
+      const data = await getAllBookingByLecturerIDORStudentID(parseInt(userId));
+      const filteredData = data.filter((item) => item.status === "Pending");
+  
+      // Sort the filtered data by createdDate in descending order
+      const sortedData = filteredData.sort((a, b) =>
+        new Date(b.createdAt) - new Date(a.createdAt)
+      );
+  
+      setBookedList(sortedData);
+    } catch (error) {
+      console.log(error);
+    }
   }
+  
 
   async function makePutData(form, id) {
     try {

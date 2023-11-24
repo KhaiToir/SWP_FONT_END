@@ -3,15 +3,11 @@ import {
   ScheduleComponent,
   Day,
   Week,
-  WorkWeek,
   Month,
   Agenda,
   Inject,
-  ViewsDirective,
-  ViewDirective,
   ResourcesDirective,
   ResourceDirective,
-  RecurrenceEditorComponent,
 } from "@syncfusion/ej2-react-schedule";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
@@ -19,16 +15,14 @@ import {
   createSlot,
   deleteSlotById,
   getAllSlotByLecturerID,
-  searchRequestById,
   searchTeacherById,
+  updateSlotById,
 } from "../../api";
 import { useParams } from "react-router-dom";
 import { useRef } from "react";
 import { DropDownListComponent } from "@syncfusion/ej2-react-dropdowns";
 import {
   DateTimePickerComponent,
-  DatePickerComponent,
-  TimePickerComponent,
 } from "@syncfusion/ej2-react-calendars";
 
 import { L10n } from "@syncfusion/ej2-base";
@@ -47,12 +41,12 @@ export default function SchedulerLecturer({ userId, chosePage }) {
   const { requestId } = useParams();
   const [bookingRooms, setBookingRooms] = useState([]);
   const [showList, setShowList] = useState([]);
-  const [requestInfor, setRequestInfor] = useState({});
-  const [added, setAdded] = useState("");
+ 
+ 
   const [refresh, setRefresh] = useState(false);
   const [repeat, setRepeat] = useState("Never");
   const scheduleObj = useRef(null);
-  const recurrObject = useRef(null);
+
   async function fetchData() {
     const response = await getAllSlotByLecturerID(parseInt(userId))
       .then((data) =>
@@ -66,6 +60,13 @@ export default function SchedulerLecturer({ userId, chosePage }) {
       return response;
     } catch (error) {}
   }
+  async function makeUpdateRequest(form, id) {
+    try {
+      const response = await updateSlotById(form, id);
+      return response
+    } catch (error) {}
+  }
+
   async function addObject() {
     const updatedRequestedList = await Promise.all(
       bookingRooms.map(async (infor) => {
@@ -87,6 +88,8 @@ export default function SchedulerLecturer({ userId, chosePage }) {
           infor.IsReadonly = true;
         } else if (infor.status === "Not Book") {
           infor.ResourceID = 1;
+        } else if(infor.status === "Full"){
+          infor.ResourceID = 3;
         }
         infor.Description =
           BookedSucces + (infor.code && " - Code: " + infor.code);
@@ -100,11 +103,7 @@ export default function SchedulerLecturer({ userId, chosePage }) {
     setShowList(updatedRequestedList);
   }
 
-  async function searchRequest(id) {
-    const response = await searchRequestById(parseInt(id))
-      .then((data) => setRequestInfor(data))
-      .catch((error) => console.log(error));
-  }
+ 
 
   useEffect(() => {
     chosePage("Scheduler");
@@ -117,14 +116,14 @@ export default function SchedulerLecturer({ userId, chosePage }) {
   useEffect(() => {
     if (bookingRooms.length > 0) {
       addObject();
-      requestId && searchRequest(requestId);
     }
     console.log(showList);
   }, [bookingRooms]);
 
   const resourceDataSource = [
-    { Status: "Active", Id: 1, Color: "#6babfa" },
+    { Status: "Active", Id: 1, Color: "#ffa500" },
     { Status: "Finish", Id: 2, Color: "#000000" },
+    { Status: "Full", Id: 3, Color: "#6babfa" },
 
     // { Status: 'Status1',
     // Id: 3,
@@ -158,12 +157,16 @@ export default function SchedulerLecturer({ userId, chosePage }) {
           )}`}
           {")"}
         </div>
-        <div className="status">{props.status==='Not Book'?('Active'):(props.status)}</div>
+        <div className="status">
+          {props.status === "Not Book" ? "Active" : props.status}
+        </div>
         {/* Add other fields as needed */}
       </div>
     );
   };
-  const onPopupOpen = (args) => {};
+  const onPopupOpen = (args) => {
+    console.log(args);
+  };
   const onPopupClose = (args) => {
     // if (args.type === "Editor" && args.data) {
     //   args.data.RecurrenceRule = recurrObject.current.value;
@@ -178,6 +181,7 @@ export default function SchedulerLecturer({ userId, chosePage }) {
   };
 
   const onActionBegin = async (args) => {
+    console.log(args);
     if (args.requestType === "eventCreate") {
       const newEvent = args.data[0]; // The newly created event
       console.log("New Event Created:", newEvent);
@@ -283,10 +287,105 @@ export default function SchedulerLecturer({ userId, chosePage }) {
       // Do something after the delete operation if needed
       scheduleObj.current.refreshEvents();
       setRefresh(true);
+    } else if (args.requestType === "eventChange") {
+      const changedEvent = args.data; // The changed event
+      console.log("Changed Event:", changedEvent);
+      const today = new Date();
+
+      //form Data
+      const location = changedEvent.location
+        ? changedEvent.location
+        : changedEvent.Subject;
+      const startDate = new Date(changedEvent.StartTime);
+      const endDate = new Date(changedEvent.EndTime);
+      if (startDate < today) {
+        // Cancel the event creation and show a message
+        alert("Start time must be greater than or equal to today.");
+        args.cancel = true;
+        return;
+      }
+      const durationInMinutes = (endDate - startDate) / (1000 * 60); // Calculate duration in minutes
+      if (
+        startDate < today ||
+        durationInMinutes < 15 ||
+        durationInMinutes > 180
+      ) {
+        // Cancel the event creation and show a message
+        args.cancel = true;
+        alert(
+          "Invalid duration. The event duration must be between 15 minutes and 3 hours."
+        );
+        return;
+      }
+      if (!isValidLocation(location)) {
+        // Cancel the event creation and show a message
+        args.cancel = true;
+        alert(
+          "Invalid location format. Location must be in the format 'NVH P000' or 'CAMPUS P000'."
+        );
+        return;
+      }
+      if (parseInt(changedEvent.limitBooking) <= 0) {
+        args.cancel = true;
+        alert(
+          "Invalid limit booking numbers. Limit booking  must be larger than 0."
+        );
+        return;
+      }
+      // Perform the update operation here
+      try {
+        // Assuming you have a function to handle the update
+        const updatedFormData = {
+          // Update the formData based on the changes in the changedEvent
+          lecturerId: parseInt(userId),
+          code: changedEvent.code ? changedEvent.code : "",
+          limitBooking: changedEvent.limitBooking
+            ? parseInt(changedEvent.limitBooking)
+            : "20",
+          mode: "Public",
+          location: changedEvent.location
+            ? changedEvent.location
+            : changedEvent.Subject,
+          date: format(new Date(changedEvent.StartTime), "yyyy-MM-dd'T'00:00", {
+            timeZone: "UTC",
+          }),
+          startDateTime: format(
+            new Date(changedEvent.StartTime),
+            "yyyy-MM-dd'T'HH:mm",
+            {
+              timeZone: "UTC",
+            }
+          ),
+          endDateTime: format(
+            new Date(changedEvent.EndTime),
+            "yyyy-MM-dd'T'HH:mm",
+            {
+              timeZone: "UTC",
+            }
+          ),
+          repeat: "Never",
+        };
+        console.log(updatedFormData);
+        const result = await makeUpdateRequest(
+          updatedFormData,
+          parseInt(changedEvent.id)
+        ); // Implement this function
+        console.log(result);
+        alert(result);
+      } catch (error) {
+        console.error("Error updating event:", error);
+        alert(error);
+        return;
+      }
+
+      // Do something after the update operation if needed
+      scheduleObj.current.refreshEvents();
+      setRefresh(true);
     }
   };
 
   const editorWindownTemplete = (props) => {
+    console.log(props);
     return props !== undefined ? (
       <table className="custom-event-editor justify-center flex">
         <tbody>
@@ -314,7 +413,6 @@ export default function SchedulerLecturer({ userId, chosePage }) {
                   props.StartTime &&
                   new Date(props.StartTime || props.startTime)
                 }
-                //// form
               ></DateTimePickerComponent>
             </td>
           </tr>
@@ -340,7 +438,6 @@ export default function SchedulerLecturer({ userId, chosePage }) {
                 name="limitBooking"
                 className="e-field e-input"
                 type="number"
-                value={props.limitBooking && props.limitBooking}
               ></input>
             </td>
           </tr>
@@ -355,18 +452,20 @@ export default function SchedulerLecturer({ userId, chosePage }) {
               ></input>
             </td>
           </tr>
-          <tr className="">
-            <td className="pr-5 e-textlabel">Repeat</td>
-            <td>
-              <DropDownListComponent
-                id="repeat"
-                name="repeat"
-                dataSource={["Never", "Daily", "Weekly"]}
-                value={repeat && repeat}
-                onChange={(e) => setRepeat(e.target.value)}
-              ></DropDownListComponent>
-            </td>
-          </tr>
+          {!props?.location && (
+            <tr className="">
+              <td className="pr-5 e-textlabel">Repeat</td>
+              <td>
+                <DropDownListComponent
+                  id="repeat"
+                  name="repeat"
+                  dataSource={["Never", "Daily", "Weekly"]}
+                  value={repeat && repeat}
+                  onChange={(e) => setRepeat(e.target.value)}
+                ></DropDownListComponent>
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     ) : (

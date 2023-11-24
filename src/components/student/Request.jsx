@@ -21,12 +21,12 @@ export default function Request({ userId, chosePage }) {
 
   async function fetchData() {
     const response = await getAllSubject()
-      .then((data) => setSubjectList(data))
+      .then((data) => setSubjectList(data.filter((course) => course.status !== "Unactive")))
       .catch((error) => console.log(error));
     console.log(subjectList);
     const response2 = await getAllUser()
       .then((data) =>
-        setAccountList(data.filter((acc) => acc.role === "Lecturer"))
+        setAccountList(data.filter((acc) => acc.role === "Lecturer"&&acc.status!=="Unactive"))
       )
       .catch((error) => console.log(error));
   }

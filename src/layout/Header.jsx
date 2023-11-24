@@ -50,22 +50,29 @@ function Header() {
   }, [notificationOpen]);
 
   return (
-    <div className="flex w-full bg-orange-400 h-[4rem] items-center relative">
+    <div className="flex w-full bg-orange-400 h-[6rem] items-center relative">
       <div className="mx-10 uppercase text-white w-full">meet lecturer</div>
-      {/* {user && ( */}
+
       <div className="absolute bottom-0 right-0 text-white flex items-center space-x-2 gap-5 pr-5 pb-3">
         <div>{user.fullname}</div>
         <img src={Avatar} alt="avatar" className="w-10 rounded-full" />
-        <Link to={`/${user.role}/Schedule`}>
-          <AiOutlineCalendar className="text-4xl" />
-        </Link>
-        <button
-          onClick={() =>
-            setNotificationOpen((notificationOpen) => !notificationOpen)
-          }
-        >
-          <IoMdNotificationsOutline className="text-4xl " />
-        </button>
+        {user.role !== "Admin" ? (
+          <>
+            {" "}
+            <Link to={`/${user.role}/Schedule`}>
+              <AiOutlineCalendar className="text-4xl" />
+            </Link>
+            <button
+              onClick={() =>
+                setNotificationOpen((notificationOpen) => !notificationOpen)
+              }
+            >
+              <IoMdNotificationsOutline className="text-4xl " />
+            </button>
+          </>
+        ) : (
+          <></>
+        )}
         <div
           {...buttonClick}
           onClick={signOutAction}
@@ -78,7 +85,7 @@ function Header() {
       {/* )} */}
       {notificationOpen === true ? (
         notificationsList && notificationsList.length > 0 ? (
-          <div className="absolute right-0 -bottom-[15rem] flex-col bg-gray-300 w-[24rem] h-[15rem] flex overflow-y-scroll z-50">
+          <div className="absolute right-0 -bottom-[18rem] flex-col bg-gray-300 w-[24rem] h-[18rem] flex overflow-y-scroll z-50">
             <div className="w-full pl-5 p-3 text-xl font-semibold">
               Notifications
             </div>
