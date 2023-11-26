@@ -25,7 +25,8 @@ export default function Schedule({ userId, chosePage }) {
           data.filter(
             (booked) =>
               booked.studentId === parseInt(studentId) &&
-              booked.status !== "Pending"
+              booked.status !== "Pending" &&
+              booked.status !== "Denied"
           )
         )
       )

@@ -384,7 +384,8 @@ export const updateRequestById= async (form,id) => {
         const res = await axios.put(`${baseURL}/Request/${id}`,form);
         // Check if the response status is 200 OK
         if (res.status === 200) {
-            console.log('Request update successfully.');
+          return('Request update successfully.');
+          
         } else {
             console.log(`Request status ${res.status} from the server.`);
         }

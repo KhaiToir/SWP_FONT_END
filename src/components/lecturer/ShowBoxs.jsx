@@ -23,6 +23,7 @@ export default function ShowBoxs({
   const [slotHolder, setSlotHolder] = useState("");
   const [countdown, setCountdown] = useState(5);
   const [error, setNewError] = useState({});
+  const nav=useNavigate();
 
   const closeModal = () => {
     setOpenDelete(false);
@@ -85,6 +86,10 @@ export default function ShowBoxs({
             { ...requestInfor, status: "Success" },
             parseInt(requestInfor.id)
           );
+          if(respone2==='Request update successfully.'){
+            alert('Assigned requested succesfully.')
+            nav('/Lecturer/Request')
+          }
         }
         setNewError({ id: parseInt(slotHolder.id), respone: response });
         setRefresh(true);

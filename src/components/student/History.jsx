@@ -8,7 +8,7 @@ import {
   searchTeacherById,
 } from "../../api";
 
-export default function History({ userId }) {
+export default function History({ userId,chosePage }) {
   const [bookedList, setBookedList] = useState([]);
   const [slotArray, setSlotArray] = useState([]);
   const [refresh, setRefresh] = useState(true);
@@ -88,6 +88,10 @@ export default function History({ userId }) {
     // Call addObject() when bookedList changes
     addObject();
   }, [bookedList]);
+
+  useEffect(()=>{
+    chosePage("History")
+  },[])
   return (
     <div className="w-full h-ull flex flex-col justify-center items-start gap-5">
       <div className="w-[90%] mx-[5%]">
