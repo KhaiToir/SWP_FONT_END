@@ -157,7 +157,7 @@ export default function ScheduleLecturer({ userId, chosePage }) {
                       </button>
                     </td>
                     {showStudentTableLocation === info.id && (
-                      <div className="absolute flex flex-col bg-white rounded-md border-orange-500 border-2 p-5 z-[99] left-[80%]">
+                      <div className="absolute flex flex-col bg-white rounded-md border-orange-500 border-2 p-5 z-[99] left-[70%]">
                         <span className="text-center font-bold pb-3 mt-[-1rem]">
                           Student participated
                         </span>
@@ -188,7 +188,7 @@ export default function ScheduleLecturer({ userId, chosePage }) {
                                   <td className="px-5 border-black border-r-2">
                                     {index + 1}
                                   </td>
-                                  <td className="px-5 border-black ">
+                                  <td className="px-5 border-black whitespace-nowrap">
                                     {stu.fullname}
                                   </td>
                                 </tr>

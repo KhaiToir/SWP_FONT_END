@@ -302,18 +302,6 @@ export default function CreateSlotLecturer({userId}) {
                 </div>
               )}
               <div className="flex flex-row w-full items-center">
-                <span className="text-xl font-medium w-[30%]">Mode</span>
-                <select
-                  className={`border border-gray-900 rounded-sm py-1 pl-5 pr-3 placeholder:italic bg-gray-200 placeholder:text-gray-400 w-[15rem]`}
-                  name="mode"
-                  value={formData.mode} // Sử dụng giá trị từ formData
-                  onChange={handleInputChange}
-                >
-                  <option value="Public">Public</option>
-                  <option value="Private">Private</option>
-                </select>
-              </div>
-              <div className="flex flex-row w-full items-center">
                 <span className="text-xl font-medium w-[30%]">Code</span>
                 <input
                   className={`border border-gray-900 rounded-sm py-1 pl-5 pr-3 placeholder:italic bg-gray-200 placeholder:text-gray-400 w-[15rem]`}
